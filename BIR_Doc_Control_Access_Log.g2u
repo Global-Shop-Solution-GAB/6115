@@ -1,0 +1,267 @@
+Program.Sub.ScreenSU.Start
+Gui.SS_Form1..Create(BaseForm)
+Gui.SS_Form1..Caption("Document Control Access Logging")
+Gui.SS_Form1..Size(305,167)
+Gui.SS_Form1..MinX(0)
+Gui.SS_Form1..MinY(0)
+Gui.SS_Form1..Position(0,0)
+Gui.SS_Form1..AlwaysOnTop(False)
+Gui.SS_Form1..FontName("Tahoma")
+Gui.SS_Form1..FontSize(8.25)
+Gui.SS_Form1..ControlBox(True)
+Gui.SS_Form1..MaxButton(True)
+Gui.SS_Form1..MinButton(True)
+Gui.SS_Form1..MousePointer(0)
+Gui.SS_Form1..Moveable(True)
+Gui.SS_Form1..Sizeable(True)
+Gui.SS_Form1..ShowInTaskBar(True)
+Gui.SS_Form1..TitleBar(True)
+Gui.SS_Form1..Event(UnLoad,SS_Form1_UnLoad)
+Gui.SS_Form1.dtpBegdate.Create(DatePicker)
+Gui.SS_Form1.dtpBegdate.Enabled(True)
+Gui.SS_Form1.dtpBegdate.Visible(True)
+Gui.SS_Form1.dtpBegdate.Zorder(0)
+Gui.SS_Form1.dtpBegdate.Size(127,20)
+Gui.SS_Form1.dtpBegdate.Position(6,30)
+Gui.SS_Form1.dtpBegdate.CheckBox(False)
+Gui.SS_Form1.dtpBegdate.FontName("Tahoma")
+Gui.SS_Form1.dtpBegdate.FontSize(8.25)
+Gui.SS_Form1.dtpEnddate.Create(DatePicker)
+Gui.SS_Form1.dtpEnddate.Enabled(True)
+Gui.SS_Form1.dtpEnddate.Visible(True)
+Gui.SS_Form1.dtpEnddate.Zorder(0)
+Gui.SS_Form1.dtpEnddate.Size(127,20)
+Gui.SS_Form1.dtpEnddate.Position(142,30)
+Gui.SS_Form1.dtpEnddate.CheckBox(False)
+Gui.SS_Form1.dtpEnddate.FontName("Tahoma")
+Gui.SS_Form1.dtpEnddate.FontSize(8.25)
+Gui.SS_Form1.lblBegdate.Create(Label,"Beginning Date",True,72,13,0,9,15,True,0,"Tahoma",8.25,,0,0)
+Gui.SS_Form1.lblBegdate.BorderStyle(0)
+Gui.SS_Form1.lblEnddate.Create(Label,"Ending Date",True,58,13,0,144,15,True,0,"Tahoma",8.25,,0,0)
+Gui.SS_Form1.lblEnddate.BorderStyle(0)
+Gui.SS_Form1.cmdPrint.Create(Button)
+Gui.SS_Form1.cmdPrint.Enabled(True)
+Gui.SS_Form1.cmdPrint.Visible(True)
+Gui.SS_Form1.cmdPrint.Zorder(0)
+Gui.SS_Form1.cmdPrint.Size(75,23)
+Gui.SS_Form1.cmdPrint.Position(7,91)
+Gui.SS_Form1.cmdPrint.Caption("Print")
+Gui.SS_Form1.cmdPrint.FontName("Tahoma")
+Gui.SS_Form1.cmdPrint.FontSize(8.25)
+Gui.SS_Form1.cmdPrint.Event(Click,cmdPrint_Click)
+Gui.SS_Form1.chkAllDates.Create(CheckBox)
+Gui.SS_Form1.chkAllDates.Enabled(True)
+Gui.SS_Form1.chkAllDates.Visible(True)
+Gui.SS_Form1.chkAllDates.Zorder(0)
+Gui.SS_Form1.chkAllDates.Size(75,20)
+Gui.SS_Form1.chkAllDates.Position(7,54)
+Gui.SS_Form1.chkAllDates.Caption("All Dates")
+Gui.SS_Form1.chkAllDates.FontName("Tahoma")
+Gui.SS_Form1.chkAllDates.FontSize(8.25)
+Gui.SS_Form1.chkAllDates.Event(Click,chkAllDates_Click)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Variable.Global.lBIRunID.Declare(Long,0)
+Variable.Global.lLogID.Declare(Long,0)
+Variable.Global.sDateSelection.Declare(String)
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+
+'Project Start Date 09/03/2020
+'Coded by Anchal Gupta
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+Function.ODBC.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+Gui.SS_Form1..Show
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_Doc_Control_Access_Logging.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(SS_Form1_Unload)
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.Main.End
+
+Program.Sub.cmdPrint_Click.Start
+F.Intrinsic.Control.SetErrorHandler("cmdPrint_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.dBegdate.Declare(Date)
+V.Local.dEnddate.Declare(Date)
+
+'Disappear the screen
+Gui.SS_Form1..Visible(False)
+
+F.Global.BI.GetRunID(V.Global.lBIRunID)
+F.Intrinsic.Control.If(V.Ambient.IsInIDE,=,True)
+        F.Global.BI.StartLogging(V.Global.lBIRunID,1234,0,"",V.Global.lLogID)
+F.Intrinsic.Control.Else
+       F.Global.BI.StartLogging(V.Global.lBIRunID,-1,-1,"",V.Global.lLogID)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.If(V.Screen.SS_Form1!chkAllDates.Value,=,1)
+	'When 'All dates' is selected
+	F.Intrinsic.Date.DateSerial(1900,01,01,V.Local.dBegdate)
+	F.Intrinsic.Date.DateSerial(9999,01,01,V.Local.dEnddate)
+F.Intrinsic.Control.Else
+	'When a date range is entered
+	V.Local.dBegdate.Set(V.Screen.SS_Form1!dtpBegdate.Value)
+	V.Local.dEnddate.Set(V.Screen.SS_Form1!dtpEnddate.Value)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.CallSub(LoadData, "sBegDate", V.Local.dBegdate.PervasiveDate, "sEndDate", V.Local.dEnddate.PervasiveDate)
+
+F.Intrinsic.Control.If(V.DataTable.dtDocControl.Exists,=,True)
+	F.Intrinsic.Control.If(V.DataTable.dtDocControl.RowCount--,>,0)
+		F.Intrinsic.Control.CallSub(Load_To_Table)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Global.BI.StopLogging(V.Global.lLogID)
+
+'Setting the date range to display on report
+F.Intrinsic.String.Build("{0} - {1}",V.Local.dBegdate,V.Local.dEnddate,V.Global.sDateSelection)
+
+'Running Crystal Report
+F.Intrinsic.Control.CallSub(CallBI)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("cmdPrint_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_Doc_Control_Access_Logging.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(SS_Form1_Unload)
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.cmdPrint_Click.End
+
+Program.Sub.Load_To_Table.Start
+'Load to z table.
+V.Local.sFm.Declare(String)
+'Add runid column
+F.Data.DataTable.AddColumn("dtDocControl","BIRUNID","Long",V.Global.lBIRunID)
+'Map to SQL Table
+V.Local.sFm.Set("BIRUNID@!@BIRUNID")
+V.Local.sFm.Append("*!*Trmnl@!@TRMNL")
+V.Local.sFm.Append("*!*Gs_User@!@GS_USER")
+V.Local.sFm.Append("*!*Doc_Key@!@DOC_KEY")
+V.Local.sFm.Append("*!*Doc_Type@!@DOC_TYPE")
+V.Local.sFm.Append("*!*Action@!@ACTION")
+V.Local.sFm.Append("*!*Date_Accessed@!@DATE_ACCESSED")
+
+'Save to db.
+F.Data.DataTable.SaveToDB("dtDocControl","conx","Z_DOC_CTRL_LOG","",128,V.Local.sFm)
+
+Program.Sub.Load_To_Table.End
+
+Program.Sub.LoadData.Start
+F.Intrinsic.Control.SetErrorHandler("LoadData_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sSql.Declare(String)
+
+'Loading data from Document Control Logging table into datatable
+F.Intrinsic.String.Build("Select Trmnl, Gs_User, Doc_Key, Doc_Type, Action, Date_Accessed from Doc_Ctrl_Log where CONVERT(Date_Accessed,SQL_DATE) >= '{0}' and CONVERT(Date_Accessed,SQL_DATE) <='{1}'", V.Args.sBegDate, V.Args.sEndDate, V.Local.sSql)
+F.Data.Datatable.CreateFromSQL("dtDocControl","conx",V.Local.sSql,True)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("LoadData_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_Doc_Control_Access_Logging.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(SS_Form1_Unload)
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.LoadData.End
+
+Program.Sub.CallBI.Start
+F.Intrinsic.Control.SetErrorHandler("CallBI_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sValues.Declare(String)
+V.Local.sParams.Declare(String)
+V.Local.iRet.Declare(Long)
+
+V.Local.sParams.Set("AllDates*!*DateSelection")
+F.Intrinsic.String.Build("{0}*!*{1}",V.Screen.SS_Form1!chkAllDates.Value,V.Global.sDateSelection,V.Local.sValues)
+
+F.Global.BI.RunReportPreProcessor(V.Global.lBIRunID,V.Global.lLogID,V.Local.sParams,V.Local.sValues,"",-1,True,"",-1,"",-1,"","",V.Local.iRet)
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("CallBI_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_Doc_Control_Access_Logging.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Ss_form1_unload)
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.CallBI.End
+
+Program.Sub.chkAllDates_Click.Start
+F.Intrinsic.Control.SetErrorHandler("chkAllDates_Click_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+F.Intrinsic.Control.If(V.Screen.SS_Form1!chkAllDates.Value,=,1)
+	'disable entry of Date range
+	Gui.SS_Form1.dtpBegdate.Enabled(False)
+	Gui.SS_Form1.dtpEnddate.Enabled(False)
+F.Intrinsic.Control.Else
+	'enable entry of Date range
+	Gui.SS_Form1.dtpBegdate.Enabled(True)
+	Gui.SS_Form1.dtpEnddate.Enabled(True)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("chkAllDates_Click_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_Doc_Control_Access_Logging.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(SS_Form1_Unload)
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.chkAllDates_Click.End
+
+Program.Sub.SS_Form1_UnLoad.Start
+F.Intrinsic.Control.SetErrorHandler("SS_Form1_Unload_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+'Closing connection
+F.ODBC.Connection!conx.Close
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("SS_Form1_Unload_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: BIR_Doc_Control_Access_Logging.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+
+Program.Sub.SS_Form1_UnLoad.End
+
+Program.Sub.Comments.Start
+${$5$}$3.0.0.0$}$1
+${$6$}$agupta$}$20200910182837833$}$2j9YvRk5PePUWpWDTWwG2trjr0T3I1UyvyeJCQNqIYQxeBjXaeDma1u53gCZMbE0zKzBVjxtJyQ=
+Program.Sub.Comments.End
